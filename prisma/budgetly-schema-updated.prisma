@@ -1,0 +1,1134 @@
+///////////////////////////////////////////////////////////////
+// Budgetly Database Schema (v2.0 - ENHANCED)
+//
+// Database  : PostgreSQL
+// ORM       : Prisma
+// Auth      : Better Auth
+// Version   : 2.0
+//
+// UPDATES IN v2.0:
+// ✓ Soft deletes for financial records
+// ✓ Cascade deletes on category relationships
+// ✓ Multi-currency support per transaction
+// ✓ Budget alert/overspend tracking
+// ✓ Recurring transaction execution history
+// ✓ Category hierarchies (parent-child)
+// ✓ Spending analytics & aggregation
+// ✓ Improved indexing for analytics queries
+// ✓ Audit logging capability
+// ✓ Typed notification metadata
+//
+// This schema is organized into:
+//
+// 1. Prisma Configuration
+// 2. Enumerations
+// 3. Better Auth Models
+// 4. User Preferences & Settings
+// 5. Category Management (with hierarchies)
+// 6. Financial Core Models
+// 7. Alerts & Notifications
+// 8. Analytics & Auditing
+//
+///////////////////////////////////////////////////////////////
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+///////////////////////////////////////////////////////////////
+//
+// ENUMS
+//
+///////////////////////////////////////////////////////////////
+
+enum Theme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum BudgetPeriod {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  BUDGET_ALERT
+  GOAL_REMINDER
+  RECURRING_TRANSACTION
+}
+
+enum BudgetAlertStatus {
+  WARNING
+  CRITICAL
+  RESOLVED
+}
+
+enum RecurrenceFrequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum CurrencyCode {
+  INR
+  USD
+  EUR
+  GBP
+  JPY
+  AUD
+  CAD
+  SGD
+  HKD
+  CHF
+}
+
+///////////////////////////////////////////////////////////////
+//
+// BETTER AUTH MODELS
+//
+///////////////////////////////////////////////////////////////
+
+model User {
+
+  /// Primary Key
+  id String @id
+
+  /// Basic Information
+  name String
+
+  email String @unique
+
+  emailVerified Boolean @default(false)
+
+  image String?
+
+  /// Timestamps
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  ///////////////////////////////////////////////////////////
+  // Better Auth Relations
+  ///////////////////////////////////////////////////////////
+
+  accounts Account[]
+
+  sessions Session[]
+
+  ///////////////////////////////////////////////////////////
+  // Budgetly Relations
+  ///////////////////////////////////////////////////////////
+
+  settings UserSettings?
+
+  categories Category[]
+
+  transactions Transaction[]
+
+  budgets Budget[]
+
+  goals Goal[]
+
+  notifications Notification[]
+
+  recurringTransactions RecurringTransaction[]
+
+  recurringTransactionExecutions RecurringTransactionExecution[]
+
+  budgetAlerts BudgetAlert[]
+
+  spendingStats SpendingStats[]
+
+  auditLogs AuditLog[]
+
+  notificationPreferences NotificationPreference?
+}
+
+model Session {
+
+  id String @id
+
+  expiresAt DateTime
+
+  token String @unique
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  ipAddress String?
+
+  userAgent String?
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  @@index([userId])
+}
+
+model Account {
+
+  id String @id
+
+  accountId String
+
+  providerId String
+
+  userId String
+
+  accessToken String?
+
+  refreshToken String?
+
+  accessTokenExpiresAt DateTime?
+
+  refreshTokenExpiresAt DateTime?
+
+  scope String?
+
+  idToken String?
+
+  password String?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  @@index([userId])
+
+  @@unique([providerId, accountId])
+}
+
+model Verification {
+
+  id String @id
+
+  identifier String
+
+  value String
+
+  expiresAt DateTime
+
+  createdAt DateTime?
+
+  updatedAt DateTime?
+
+  @@index([identifier])
+
+  @@unique([identifier, value])
+}
+
+///////////////////////////////////////////////////////////////
+//
+// USER PREFERENCES & SETTINGS
+//
+///////////////////////////////////////////////////////////////
+
+model UserSettings {
+
+  ///////////////////////////////////////////////////////////
+  // Primary Key
+  ///////////////////////////////////////////////////////////
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Relations
+  ///////////////////////////////////////////////////////////
+
+  userId String @unique
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Preferences
+  ///////////////////////////////////////////////////////////
+
+  theme Theme @default(SYSTEM)
+
+  languageCode String @default("en")
+
+  /// Default currency for user's transactions
+  currencyCode CurrencyCode @default(INR)
+
+  timezone String @default("Asia/Kolkata")
+
+  dateFormat String @default("DD/MM/YYYY")
+
+  ///////////////////////////////////////////////////////////
+  // Notification Preferences
+  ///////////////////////////////////////////////////////////
+
+  emailNotifications Boolean @default(true)
+
+  pushNotifications Boolean @default(true)
+
+  budgetAlerts Boolean @default(true)
+
+  goalReminders Boolean @default(true)
+
+  recurringTransactionNotifications Boolean @default(true)
+
+  weeklyDigest Boolean @default(true)
+
+  ///////////////////////////////////////////////////////////
+  // Voice Preferences
+  ///////////////////////////////////////////////////////////
+
+  voiceEnabled Boolean @default(false)
+
+  ///////////////////////////////////////////////////////////
+  // Financial Preferences
+  ///////////////////////////////////////////////////////////
+
+  /// Alert threshold as percentage (e.g., 80 for 80%)
+  budgetAlertThreshold Int @default(80)
+
+  /// Enable multi-currency support
+  multiCurrencyEnabled Boolean @default(false)
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationPreference {
+
+  id String @id @default(uuid())
+
+  userId String @unique
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  /// Notification types user wants to receive
+  enabledNotificationTypes NotificationType[] @default([INFO, SUCCESS, WARNING, ERROR, BUDGET_ALERT, GOAL_REMINDER])
+
+  /// Quiet hours (ISO time format HH:mm)
+  quietHoursStart String?
+
+  quietHoursEnd String?
+
+  /// Minimum transaction amount to notify (0 = all)
+  minTransactionAmountToNotify Decimal @default(0) @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+///////////////////////////////////////////////////////////////
+//
+// CATEGORY MANAGEMENT (WITH HIERARCHIES)
+//
+///////////////////////////////////////////////////////////////
+
+model Category {
+
+  ///////////////////////////////////////////////////////////
+  // Primary Key
+  ///////////////////////////////////////////////////////////
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Ownership
+  ///////////////////////////////////////////////////////////
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Category Hierarchy
+  ///////////////////////////////////////////////////////////
+
+  /// Parent category for subcategories (null = top-level)
+  parentCategoryId String?
+
+  parentCategory Category?
+    @relation(
+      "CategoryHierarchy",
+      fields: [parentCategoryId],
+      references: [id],
+      onDelete: SetNull
+    )
+
+  /// Child categories
+  subCategories Category[]
+    @relation("CategoryHierarchy")
+
+  ///////////////////////////////////////////////////////////
+  // Information
+  ///////////////////////////////////////////////////////////
+
+  name String
+
+  icon String?
+
+  color String? @default("#3B82F6")
+
+  description String?
+
+  isDefault Boolean @default(false)
+
+  ///////////////////////////////////////////////////////////
+  // Relations
+  ///////////////////////////////////////////////////////////
+
+  transactions Transaction[]
+
+  budgets Budget[]
+
+  recurringTransactions RecurringTransaction[]
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  /// Soft delete
+  deletedAt DateTime?
+
+  ///////////////////////////////////////////////////////////
+  // Constraints
+  ///////////////////////////////////////////////////////////
+
+  @@unique([userId, name, deletedAt])
+
+  @@index([userId])
+
+  @@index([parentCategoryId])
+
+  @@index([deletedAt])
+}
+
+///////////////////////////////////////////////////////////////
+//
+// FINANCIAL CORE MODELS
+//
+///////////////////////////////////////////////////////////////
+
+model Transaction {
+
+  ///////////////////////////////////////////////////////////
+  // Primary Key
+  ///////////////////////////////////////////////////////////
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Ownership
+  ///////////////////////////////////////////////////////////
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Category
+  ///////////////////////////////////////////////////////////
+
+  categoryId String
+
+  category Category
+    @relation(
+      fields: [categoryId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Related Recurring Transaction
+  ///////////////////////////////////////////////////////////
+
+  recurringTransactionExecutionId String?
+
+  recurringTransactionExecution RecurringTransactionExecution?
+    @relation(
+      fields: [recurringTransactionExecutionId],
+      references: [id],
+      onDelete: SetNull
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Transaction Details
+  ///////////////////////////////////////////////////////////
+
+  title String
+
+  description String?
+
+  amount Decimal @db.Decimal(12, 2)
+
+  type TransactionType
+
+  /// Currency of transaction (supports multi-currency)
+  currency CurrencyCode
+
+  transactionDate DateTime
+
+  ///////////////////////////////////////////////////////////
+  // Optional Attachment
+  ///////////////////////////////////////////////////////////
+
+  receiptUrl String?
+
+  tags String[] @default([])
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  /// Soft delete for historical data
+  deletedAt DateTime?
+
+  ///////////////////////////////////////////////////////////
+  // Indexes (optimized for analytics)
+  ///////////////////////////////////////////////////////////
+
+  @@index([userId])
+
+  @@index([categoryId])
+
+  @@index([transactionDate])
+
+  @@index([type])
+
+  @@index([currency])
+
+  @@index([userId, transactionDate])
+
+  @@index([userId, categoryId])
+
+  @@index([userId, type, transactionDate])
+
+  @@index([deletedAt])
+}
+
+///////////////////////////////////////////////////////////////
+
+model Budget {
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Ownership
+  ///////////////////////////////////////////////////////////
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Optional Category Budget
+  ///////////////////////////////////////////////////////////
+
+  categoryId String?
+
+  category Category?
+    @relation(
+      fields: [categoryId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Budget Details
+  ///////////////////////////////////////////////////////////
+
+  name String
+
+  amount Decimal @db.Decimal(12, 2)
+
+  period BudgetPeriod
+
+  startDate DateTime
+
+  endDate DateTime
+
+  ///////////////////////////////////////////////////////////
+  // Budget Alerts
+  ///////////////////////////////////////////////////////////
+
+  budgetAlerts BudgetAlert[]
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  /// Soft delete
+  deletedAt DateTime?
+
+  ///////////////////////////////////////////////////////////
+  // Indexes
+  ///////////////////////////////////////////////////////////
+
+  @@index([userId])
+
+  @@index([categoryId])
+
+  @@index([startDate])
+
+  @@index([deletedAt])
+}
+
+///////////////////////////////////////////////////////////////
+
+model Goal {
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Ownership
+  ///////////////////////////////////////////////////////////
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Goal Information
+  ///////////////////////////////////////////////////////////
+
+  title String
+
+  description String?
+
+  targetAmount Decimal @db.Decimal(12, 2)
+
+  currentAmount Decimal @default(0) @db.Decimal(12, 2)
+
+  deadline DateTime?
+
+  status GoalStatus @default(ACTIVE)
+
+  /// Icon/emoji for visual representation
+  icon String?
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  /// Soft delete
+  deletedAt DateTime?
+
+  ///////////////////////////////////////////////////////////
+  // Indexes
+  ///////////////////////////////////////////////////////////
+
+  @@index([userId])
+
+  @@index([status])
+
+  @@index([deletedAt])
+}
+
+///////////////////////////////////////////////////////////////
+//
+// RECURRING TRANSACTIONS
+//
+///////////////////////////////////////////////////////////////
+
+model RecurringTransaction {
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Ownership
+  ///////////////////////////////////////////////////////////
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Category
+  ///////////////////////////////////////////////////////////
+
+  categoryId String
+
+  category Category
+    @relation(
+      fields: [categoryId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Recurring Details
+  ///////////////////////////////////////////////////////////
+
+  title String
+
+  description String?
+
+  amount Decimal @db.Decimal(12, 2)
+
+  type TransactionType
+
+  /// Frequency of recurrence
+  frequency RecurrenceFrequency
+
+  /// Legacy: cron expression (deprecated, use frequency instead)
+  cronExpression String?
+
+  nextExecution DateTime
+
+  /// Last successful execution
+  lastExecution DateTime?
+
+  isActive Boolean @default(true)
+
+  /// Optional end date for recurring transactions
+  endDate DateTime?
+
+  /// Occurrences to generate after (null = infinite)
+  maxOccurrences Int?
+
+  /// Occurrences already generated
+  occurrencesGenerated Int @default(0)
+
+  ///////////////////////////////////////////////////////////
+  // Execution History
+  ///////////////////////////////////////////////////////////
+
+  executions RecurringTransactionExecution[]
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  /// Soft delete
+  deletedAt DateTime?
+
+  ///////////////////////////////////////////////////////////
+  // Indexes
+  ///////////////////////////////////////////////////////////
+
+  @@index([userId])
+
+  @@index([nextExecution])
+
+  @@index([isActive])
+
+  @@index([deletedAt])
+}
+
+///////////////////////////////////////////////////////////////
+// Recurring Transaction Execution History
+///////////////////////////////////////////////////////////////
+
+model RecurringTransactionExecution {
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Relations
+  ///////////////////////////////////////////////////////////
+
+  recurringTransactionId String
+
+  recurringTransaction RecurringTransaction
+    @relation(
+      fields: [recurringTransactionId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Execution Details
+  ///////////////////////////////////////////////////////////
+
+  /// Actual transaction created from this execution
+  transactions Transaction[]
+
+  executionDate DateTime
+
+  /// Status of execution
+  status String @default("completed")
+
+  /// Notes/error messages if execution failed
+  notes String?
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  ///////////////////////////////////////////////////////////
+  // Indexes
+  ///////////////////////////////////////////////////////////
+
+  @@index([recurringTransactionId])
+
+  @@index([userId])
+
+  @@index([executionDate])
+}
+
+///////////////////////////////////////////////////////////////
+//
+// ALERTS & NOTIFICATIONS
+//
+///////////////////////////////////////////////////////////////
+
+model BudgetAlert {
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Relations
+  ///////////////////////////////////////////////////////////
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  budgetId String
+
+  budget Budget
+    @relation(
+      fields: [budgetId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Alert Details
+  ///////////////////////////////////////////////////////////
+
+  status BudgetAlertStatus @default(WARNING)
+
+  /// Amount spent at time of alert
+  amountSpent Decimal @db.Decimal(12, 2)
+
+  /// Percentage of budget used
+  percentageUsed Int
+
+  message String
+
+  /// Whether user has dismissed this alert
+  isDismissed Boolean @default(false)
+
+  dismissedAt DateTime?
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  ///////////////////////////////////////////////////////////
+  // Indexes
+  ///////////////////////////////////////////////////////////
+
+  @@index([userId])
+
+  @@index([budgetId])
+
+  @@index([status])
+
+  @@index([isDismissed])
+}
+
+model Notification {
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Ownership
+  ///////////////////////////////////////////////////////////
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Notification Content
+  ///////////////////////////////////////////////////////////
+
+  title String
+
+  body String
+
+  type NotificationType
+
+  actionUrl String?
+
+  /// Typed metadata for different notification types
+  metadata Json?
+
+  isRead Boolean @default(false)
+
+  readAt DateTime?
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  ///////////////////////////////////////////////////////////
+  // Indexes
+  ///////////////////////////////////////////////////////////
+
+  @@index([userId])
+
+  @@index([isRead])
+
+  @@index([type])
+
+  @@index([createdAt])
+}
+
+///////////////////////////////////////////////////////////////
+//
+// ANALYTICS & AGGREGATION
+//
+///////////////////////////////////////////////////////////////
+
+model SpendingStats {
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Ownership & Period
+  ///////////////////////////////////////////////////////////
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  /// Year-Month format: "2024-01"
+  period String
+
+  ///////////////////////////////////////////////////////////
+  // Aggregated Data
+  ///////////////////////////////////////////////////////////
+
+  totalIncome Decimal @default(0) @db.Decimal(12, 2)
+
+  totalExpense Decimal @default(0) @db.Decimal(12, 2)
+
+  netAmount Decimal @default(0) @db.Decimal(12, 2)
+
+  transactionCount Int @default(0)
+
+  /// Top spending categories (JSON format)
+  topCategories Json?
+
+  /// Average transaction amount
+  averageTransactionAmount Decimal @default(0) @db.Decimal(12, 2)
+
+  /// Largest transaction
+  largestTransaction Decimal @default(0) @db.Decimal(12, 2)
+
+  /// Budget utilization percentage
+  budgetUtilizationPercent Int @default(0)
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  ///////////////////////////////////////////////////////////
+  // Indexes
+  ///////////////////////////////////////////////////////////
+
+  @@unique([userId, period])
+
+  @@index([userId])
+
+  @@index([period])
+}
+
+///////////////////////////////////////////////////////////////
+//
+// AUDIT LOGGING
+//
+///////////////////////////////////////////////////////////////
+
+model AuditLog {
+
+  id String @id @default(uuid())
+
+  ///////////////////////////////////////////////////////////
+  // Ownership
+  ///////////////////////////////////////////////////////////
+
+  userId String
+
+  user User
+    @relation(
+      fields: [userId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  ///////////////////////////////////////////////////////////
+  // Audit Details
+  ///////////////////////////////////////////////////////////
+
+  action String
+
+  /// Entity type (Transaction, Budget, Goal, Category, etc.)
+  entityType String
+
+  entityId String
+
+  /// JSON of changes made
+  changes Json?
+
+  /// IP address of request
+  ipAddress String?
+
+  userAgent String?
+
+  ///////////////////////////////////////////////////////////
+  // Metadata
+  ///////////////////////////////////////////////////////////
+
+  createdAt DateTime @default(now())
+
+  ///////////////////////////////////////////////////////////
+  // Indexes (for compliance & debugging)
+  ///////////////////////////////////////////////////////////
+
+  @@index([userId])
+
+  @@index([entityType])
+
+  @@index([entityId])
+
+  @@index([action])
+
+  @@index([createdAt])
+}
