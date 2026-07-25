@@ -1,117 +1,130 @@
+<div align="center">
+
 # 💰 Budgetly
 
-> **Your Intelligent AI-Powered Personal Finance Platform**
+### AI-Powered Personal Finance Platform
 
-<p align="center">
-
-Manage your finances effortlessly with AI, voice commands, multilingual support, powerful analytics, and complete ownership of your data.
-
-</p>
+Manage your finances using natural language, voice commands, multilingual AI, and beautiful analytics.
 
 ---
 
-## 📖 Overview
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma)
+![OpenRouter](https://img.shields.io/badge/OpenRouter-AI-purple)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-Budgetly is a modern, AI-assisted personal finance platform designed to make money management simple, intelligent, and accessible.
-
-Unlike traditional expense trackers, Budgetly allows users to interact naturally using text or voice while maintaining complete control over their financial data.
-
-Whether you want to manually record expenses, ask AI to organize transactions, analyze your spending habits, or receive personalized financial coaching, Budgetly provides a seamless experience without making AI a dependency.
+</div>
 
 ---
 
-## ✨ Key Features
+# 🌟 Introduction
 
-### 💳 Finance Management
+Budgetly is a modern AI-powered personal finance platform designed to make money management effortless.
 
-- Transaction Management
+Unlike traditional finance applications, Budgetly combines:
+
+- 📊 Professional financial management
+- 🤖 AI-powered automation
+- 🎤 Natural voice interactions
+- 🌍 Multilingual support
+- 💱 Multi-currency support
+- 🔒 Privacy-first architecture
+
+AI assists the user—but never replaces user control.
+
+---
+
+# 🎯 Why Budgetly?
+
+Managing finances should feel like having a conversation.
+
+Instead of manually filling forms, simply say:
+
+> "Yesterday I spent ₹500 on groceries."
+
+or
+
+> "Kal maine 200 rupaye ki chai pi."
+
+Budgetly understands your intent, validates the request, and securely records the transaction.
+
+---
+
+# ✨ Core Features
+
+## 💳 Finance
+
 - Income Tracking
 - Expense Tracking
 - Budget Planning
 - Savings Goals
-- Financial Reports
-- Calendar View
-- Analytics Dashboard
-- Multi Currency Support
+- Analytics
+- Reports
+- Calendar
+- Receipt Management
 - Category Management
-- Receipt Attachments
 
 ---
 
-### 🤖 AI Assistant
+## 🤖 AI Assistant
 
-A floating AI assistant available across every page.
+Available on every page.
 
-Capabilities include:
+Capabilities:
 
-- Add transactions using natural language
-- Edit existing transactions
+- Add transactions
+- Edit transactions
 - Delete transactions
-- Search transactions
-- Navigate the application
-- Answer finance-related questions
-- Generate financial summaries
-- Understand conversational context
-
-Example:
-
-> "Yesterday I spent ₹500 on groceries."
+- Search
+- Navigation
+- AI Chat
+- Financial Questions
 
 ---
 
-### 🧠 AI Coach
+## 🧠 AI Coach
 
-A dedicated financial mentor.
+Your personal financial mentor.
 
 Provides:
 
 - Spending Analysis
-- Savings Recommendations
 - Budget Suggestions
+- Saving Plans
+- Goal Recommendations
 - Monthly Reviews
-- Goal Planning
-- Personalized Financial Advice
-
-Unlike the AI Assistant, the AI Coach focuses on helping users make smarter financial decisions rather than executing actions.
 
 ---
 
-### 🎤 Voice Support
+## 🎤 Voice AI
 
-Budgetly supports natural voice interactions.
+Supports:
 
-Initial languages:
+✅ English
 
-- 🇮🇳 Hindi
-- 🇬🇧 English
+✅ Hindi
 
-Supported speech patterns:
+✅ Hinglish
 
-- English
-- Hindi
-- Hinglish
-- Mixed Hindi + English
+✅ Mixed Hindi + English
 
-Examples:
+Example:
 
-> "Kal maine ₹500 ki coffee pi."
-
-> "Yesterday I spent ₹1200 on groceries."
-
-> "Aaj salary receive hui."
-
-Voice responses are also supported for AI conversations.
+> "Kal maine ₹700 ki shopping ki."
 
 ---
 
-### 🌍 Localization
+## 🌍 Languages
 
-Initial Languages
+Initial
 
 - English
 - Hindi
 
-Future support includes:
+Future
 
 - Spanish
 - French
@@ -121,210 +134,270 @@ Future support includes:
 
 ---
 
-### 💱 Multi-Currency
+## 💱 Multi Currency
 
-Budgetly supports multiple currencies.
-
-Initially:
+Supports
 
 - INR
 - USD
 - EUR
 - GBP
 
-The preferred currency can be changed at any time.
+---
+
+# 🖼 Screenshots
+
+Coming Soon
+
+Dashboard
+
+Transactions
+
+AI Assistant
+
+AI Coach
+
+Reports
 
 ---
 
-## 🏗 System Architecture
+# 🏗 Architecture
 
-```
+```text
 Browser
-    │
-    ▼
-Next.js Frontend
-    │
-    ▼
-Backend API
-    │
-    ▼
+
+↓
+
+Next.js
+
+↓
+
+API Layer
+
+↓
+
 Finance Engine
-    │
- ┌──┴───────────────┐
- │                  │
- ▼                  ▼
-Database        OpenRouter AI
- │
- ▼
-Cloud Storage
+
+↓
+
+Database
 ```
 
-The Finance Engine is the core of Budgetly.
+AI
+
+↓
+
+OpenRouter
+
+↓
+
+JSON
+
+↓
+
+Finance Engine
 
 AI never directly modifies the database.
 
-Every AI-generated action passes through validation before execution.
-
 ---
 
-## 🛠 Tech Stack
+# 🛠 Tech Stack
 
-### Frontend
+Frontend
 
 - Next.js
 - React
 - TypeScript
-- Tailwind CSS
+- TailwindCSS
 - shadcn/ui
 
-### Backend
+Backend
 
-- Next.js API Routes
-- TypeScript
-
-### Database
-
+- Next.js API
+- Prisma
 - PostgreSQL
-- Prisma ORM
 
-### Authentication
+Authentication
 
 - Better Auth
 
-### AI
+AI
 
 - OpenRouter
 
-### Storage
+Storage
 
 - Cloudflare R2
 
-### Deployment
+Deployment
 
 - Vercel
 
----
+Monitoring
 
-## 🎯 Design Principles
+- Sentry
 
-Budgetly follows several engineering principles:
+Analytics
 
-- AI assists users but never replaces user control.
-- Every financial operation is validated before execution.
-- Privacy is a first-class concern.
-- The system remains functional even if AI services are unavailable.
-- Modular architecture allows components to be replaced independently.
-- Accessibility and responsiveness are built in from the beginning.
+- PostHog
 
 ---
 
-## 📂 Project Structure
+# 📂 Folder Structure
 
-```
+```text
 budgetly/
 
-├── app/
-├── components/
-├── features/
-├── lib/
-├── prisma/
-├── public/
-├── docs/
-├── tests/
-├── middleware.ts
-└── README.md
+app/
+
+components/
+
+features/
+
+hooks/
+
+lib/
+
+prisma/
+
+docs/
+
+tests/
+
+public/
+
+middleware.ts
 ```
 
 ---
 
-## 📚 Documentation
+# 🚀 Quick Start
 
-Comprehensive documentation is available inside the `docs/` directory.
+Clone
 
-Documentation includes:
+```bash
+git clone https://github.com/yourusername/budgetly.git
+```
+
+Install
+
+```bash
+npm install
+```
+
+Environment
+
+```bash
+cp .env.example .env
+```
+
+Run
+
+```bash
+npm run dev
+```
+
+---
+
+# 🔐 Environment Variables
+
+```env
+DATABASE_URL=
+
+OPENROUTER_API_KEY=
+
+AUTH_SECRET=
+
+AUTH_URL=
+
+R2_ACCESS_KEY=
+
+R2_SECRET_KEY=
+
+R2_BUCKET=
+
+R2_ENDPOINT=
+```
+
+---
+
+# 📚 Documentation
+
+Complete documentation is available in
+
+/docs
+
+including
 
 - Product Vision
-- Software Requirements Specification
+- SRS
 - System Architecture
 - Database Design
-- API Design
-- AI Architecture
+- Backend
+- Frontend
 - Security
+- AI System
 - Deployment
-- Development Roadmap
 - Coding Standards
-- Testing Strategy
 
 ---
 
-## 🚀 Development Philosophy
+# 🛣 Roadmap
 
-Budgetly is built following professional software engineering practices.
+## Version 1
 
-Every feature follows the same lifecycle:
-
-```
-Requirement Analysis
-
-↓
-
-Architecture
-
-↓
-
-Database Design
-
-↓
-
-API Design
-
-↓
-
-Frontend Design
-
-↓
-
-Implementation
-
-↓
-
-Testing
-
-↓
-
-Review
-
-↓
-
-Documentation
-```
-
-No feature is implemented before being designed.
+- Authentication
+- Dashboard
+- Transactions
+- Budgets
+- Goals
+- Reports
+- AI Assistant
 
 ---
 
-## 🤝 Contributing
+## Version 2
 
-Contributions are welcome.
+- Voice AI
+- Receipt OCR
+- Shared Wallets
+- Family Accounts
 
-Before contributing, please read:
+---
+
+## Version 3
+
+- Investments
+- Tax Planning
+- AI Forecasting
+- Smart Notifications
+
+---
+
+# 🤝 Contributing
+
+We welcome contributions.
+
+Please read
 
 - Coding Standards
-- Architecture Documentation
+- Architecture
 - Development Roadmap
 
----
-
-## 📜 License
-
-This project will be released under the MIT License.
+before opening a Pull Request.
 
 ---
 
-## ❤️ Vision
+# ❤️ Philosophy
 
-Budgetly aims to become a privacy-first, multilingual, AI-powered financial platform that empowers users to manage their finances naturally while retaining complete ownership of their data.
+Budgetly follows one simple principle:
 
-AI is an assistant—not the decision maker.
+> AI should help users manage money—not control it.
 
-The user is always in control.
+Every financial action is validated, secure, and always remains under the user's control.
+
+---
+
+# 📜 License
+
+MIT License
